@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Treasure Hunt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .card-glow {
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3), 0 0 5px rgba(74, 222, 128, 0.2);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
+        }
+        #qrcode-container img {
+            margin: auto;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-orbitron font-bold text-green-400">A.I. TREASURE HUNT</h1>
+            <p id="header-subtitle" class="text-gray-400 mt-2">Your next clue awaits. Think fast, move faster.</p>
+        </header>
+
+        <!-- Player View -->
+        <main id="game-container" class="bg-gray-800 border border-gray-700 rounded-lg p-6 md:p-8 card-glow hidden">
+            <!-- Info Section -->
+            <div id="info-section" class="mb-6 p-4 bg-gray-900 rounded-md flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-bold">Team: <span id="team-id" class="text-green-400"></span></h2>
+                    <p class="text-sm text-gray-400">Current Location: <span id="current-location" class="font-semibold"></span></p>
+                </div>
+                <div id="user-id-display" class="text-xs text-gray-500 text-right">
+                    <span class="font-bold">User ID:</span><br><span id="user-id-value"></span>
+                </div>
+            </div>
+
+            <!-- Puzzle Display -->
+            <div id="puzzle-container" class="mb-6">
+                <p id="puzzle-text" class="text-lg md:text-xl leading-relaxed text-gray-200 min-h-[100px]"></p>
+                <div id="loading-spinner" class="hidden flex items-center justify-center min-h-[100px]">
+                    <svg class="animate-spin h-8 w-8 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="ml-4 text-gray-400">Generating your unique puzzle...</span>
+                </div>
+            </div>
+
+            <!-- Answer Input -->
+            <div id="answer-section">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="answer-input" placeholder="Enter your answer here" class="flex-grow bg-gray-900 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+                    <button id="submit-button" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-all duration-300 btn-glow">Submit Answer</button>
+                </div>
+            </div>
+            
+            <div id="message-area" class="mt-4 text-center font-semibold h-6"></div>
+
+            <div id="next-clue-section" class="hidden mt-6 text-center">
+                <a id="next-clue-link" href="#" class="bg-green-600 text-white font-bold py-3 px-8 rounded-md hover:bg-green-700 transition-all duration-300 btn-glow inline-block">
+                    Proceed to Next Location!
+                </a>
+            </div>
+        </main>
+
+        <!-- Volunteer View -->
+        <main id="volunteer-panel" class="bg-gray-800 border border-gray-700 rounded-lg p-6 md:p-8 card-glow hidden">
+            <h2 class="text-2xl font-bold text-center mb-6 text-blue-400">Volunteer QR Code Generator</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="qr-team-name" class="block mb-2 text-sm font-medium text-gray-300">Team Name</label>
+                    <input type="text" id="qr-team-name" class="w-full bg-gray-900 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Gryffindor">
+                </div>
+                <div>
+                    <label for="qr-current-location" class="block mb-2 text-sm font-medium text-gray-300">Current Location (for this QR code)</label>
+                    <select id="qr-current-location" class="w-full bg-gray-900 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+                <button id="generate-qr-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-all duration-300 btn-glow">Generate QR Code</button>
+            </div>
+            <div id="qrcode-container" class="mt-6 text-center">
+                <!-- QR Code will be generated here -->
+            </div>
+        </main>
+
+        <footer id="instructions" class="text-center mt-8 text-gray-500">
+             <p>To use the QR Code Generator, add <code class="text-blue-400">?mode=volunteer</code> to the URL.</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        // *** CORRECTED Firebase Imports ***
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GAME CONFIGURATION ---
+        const locations = {
+            'start':    { name: 'Campus Entrance', next: 'library', answer: 'library' },
+            'library':  { name: 'Main Library', next: 'quad', answer: 'quad' },
+            'quad':     { name: 'Central Quad', next: 'lab', answer: 'lab' },
+            'lab':      { name: 'Innovation Lab', next: 'finish', answer: 'finish' },
+            'finish':   { name: 'Finish Line!', next: null, answer: null }
+        };
+
+        // DOM Element References
+        const gameContainer = document.getElementById('game-container');
+        const volunteerPanel = document.getElementById('volunteer-panel');
+        const instructions = document.getElementById('instructions');
+        const headerSubtitle = document.getElementById('header-subtitle');
+        
+        // Player View Elements
+        const teamIdEl = document.getElementById('team-id');
+        const currentLocationEl = document.getElementById('current-location');
+        const puzzleTextEl = document.getElementById('puzzle-text');
+        const answerInput = document.getElementById('answer-input');
+        const submitButton = document.getElementById('submit-button');
+        const messageArea = document.getElementById('message-area');
+        const nextClueSection = document.getElementById('next-clue-section');
+        const nextClueLink = document.getElementById('next-clue-link');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const userIdValueEl = document.getElementById('user-id-value');
+
+        // Volunteer View Elements
+        const qrTeamNameInput = document.getElementById('qr-team-name');
+        const qrCurrentLocationSelect = document.getElementById('qr-current-location');
+        const generateQrButton = document.getElementById('generate-qr-button');
+        const qrcodeContainer = document.getElementById('qrcode-container');
+
+        // Firebase Initialization
+        let db, auth, userId;
+        
+        // --- FIXED: Your web app's Firebase configuration ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
+          authDomain: "neural-quest-51f1b.firebaseapp.com",
+          projectId: "neural-quest-51f1b",
+          storageBucket: "neural-quest-51f1b.appspot.com",
+          messagingSenderId: "149762631280",
+          appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
+          measurementId: "G-V1VX8NDWRC"
+        };
+
+        async function initializeFirebase() {
+            if (!firebaseConfig || !firebaseConfig.apiKey) {
+                console.error("Firebase config is missing or invalid!");
+                document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Application is not configured correctly. Missing or invalid Firebase connection details.</div>`;
+                return;
+            }
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        if (userIdValueEl) userIdValueEl.textContent = userId;
+                        routeApplication(); // Decide which view to show
+                    } else {
+                        signInAnonymously(auth).catch(err => console.error("Anonymous sign-in failed", err));
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Failed to initialize the application. Check console for details.</div>`;
+            }
+        }
+
+        function routeApplication() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'volunteer') {
+                initVolunteerMode();
+            } else if (urlParams.has('team') && urlParams.has('location')) {
+                initGameMode();
+            } else {
+                volunteerPanel.classList.add('hidden');
+                gameContainer.classList.add('hidden');
+                instructions.classList.remove('hidden');
+            }
+        }
+
+        // --- VOLUNTEER MODE LOGIC ---
+        function initVolunteerMode() {
+            headerSubtitle.textContent = "Generate QR codes for teams on the go.";
+            gameContainer.classList.add('hidden');
+            volunteerPanel.classList.remove('hidden');
+            instructions.classList.add('hidden');
+
+            // Populate location dropdown
+            qrCurrentLocationSelect.innerHTML = ''; // Clear existing options
+            for (const locationId in locations) {
+                if(locations[locationId].next !== null) { // Don't generate QR for finish line
+                    const option = document.createElement('option');
+                    option.value = locationId;
+                    option.textContent = locations[locationId].name;
+                    qrCurrentLocationSelect.appendChild(option);
+                }
+            }
+            
+            generateQrButton.onclick = () => {
+                const teamName = qrTeamNameInput.value.trim();
+                const locationId = qrCurrentLocationSelect.value;
+                if (!teamName) {
+                    // Using a custom modal/alert in the future would be better
+                    alert("Please enter a team name.");
+                    return;
+                }
+
+                // Construct the URL for the player
+                const baseUrl = window.location.href.split('?')[0];
+                const playerUrl = `${baseUrl}?team=${encodeURIComponent(teamName)}&location=${locationId}`;
+
+                // Generate and display QR code
+                qrcodeContainer.innerHTML = ''; // Clear previous QR code
+                new QRCode(qrcodeContainer, {
+                    text: playerUrl,
+                    width: 256,
+                    height: 256,
+                    colorDark : "#ffffff",
+                    colorLight : "#1f2937",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            };
+        }
+
+
+        // --- PLAYER MODE LOGIC ---
+        async function initGameMode() {
+            headerSubtitle.textContent = "Your next clue awaits. Think fast, move faster.";
+            volunteerPanel.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            instructions.classList.add('hidden');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const teamId = urlParams.get('team');
+            const locationId = urlParams.get('location');
+            
+            if (!locations[locationId]) {
+                gameContainer.innerHTML = `<p class="text-red-400 text-center">Invalid location ID in URL.</p>`;
+                return;
+            }
+
+            const currentLocation = locations[locationId];
+            teamIdEl.textContent = teamId;
+            currentLocationEl.textContent = currentLocation.name;
+
+            if (currentLocation.next === null) {
+                puzzleTextEl.textContent = "Congratulations! You've reached the finish line!";
+                document.getElementById('answer-section').style.display = 'none';
+                return;
+            }
+
+            const savedState = await loadGameState(teamId, locationId);
+            if (savedState && savedState.puzzle) {
+                puzzleTextEl.textContent = savedState.puzzle;
+            } else {
+                const nextLocation = locations[currentLocation.next];
+                const newPuzzle = await generatePuzzleWithAI(teamId, currentLocation.name, nextLocation.name, currentLocation.answer);
+                puzzleTextEl.textContent = newPuzzle;
+                await saveGameState(teamId, locationId, newPuzzle);
+            }
+        }
+        
+        async function generatePuzzleWithAI(teamId, currentLocationName, nextLocationName, answer) {
+            loadingSpinner.classList.remove('hidden');
+            puzzleTextEl.classList.add('hidden');
+
+            const prompt = `You are a master puzzle creator for a treasure hunt game. Create a clever, unique, and fun puzzle for Team "${teamId}".
+            They are currently at the "${currentLocationName}".
+            The puzzle's answer MUST be the word "${answer}".
+            The puzzle should hint at the concept of a "${nextLocationName}" without using the word "${answer}" itself.
+            Make the puzzle creative and engaging. It can be a riddle, a logic problem, or a cryptic clue. Keep it solvable in 3-5 minutes.`;
+
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            const apiKey = ""; // Handled by environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                throw new Error("Invalid AI response format");
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                return `Team ${teamId}, an error occurred! Here is a backup riddle: I have a spine but cannot stand. I hold knowledge from every land. What am I, found at the ${nextLocationName}? (The answer is: ${answer})`;
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                puzzleTextEl.classList.remove('hidden');
+            }
+        }
+        
+        async function saveGameState(teamId, locationId, puzzle) {
+            if (!userId) return;
+            const appId = 'treasure-hunt-default'; // You can make this dynamic if needed
+            const teamDocRef = doc(db, "artifacts", appId, "public", "treasure-hunt", teamId, "progress", locationId);
+            await setDoc(teamDocRef, { puzzle, timestamp: new Date(), solved: false });
+        }
+
+        async function loadGameState(teamId, locationId) {
+            if (!userId) return null;
+            const appId = 'treasure-hunt-default'; // You can make this dynamic if needed
+            const teamDocRef = doc(db, "artifacts", appId, "public", "treasure-hunt", teamId, "progress", locationId);
+            const docSnap = await getDoc(teamDocRef);
+            return docSnap.exists() ? docSnap.data() : null;
+        }
+
+        submitButton.addEventListener('click', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const locationId = urlParams.get('location');
+            const teamId = urlParams.get('team');
+            const currentLocation = locations[locationId];
+            const userAnswer = answerInput.value.trim().toLowerCase();
+
+            if (userAnswer === currentLocation.answer) {
+                messageArea.textContent = 'Correct! Well done!';
+                messageArea.className = 'mt-4 text-center font-semibold h-6 text-green-400';
+                submitButton.disabled = true;
+                answerInput.disabled = true;
+                
+                const appId = 'treasure-hunt-default';
+                const teamDocRef = doc(db, "artifacts", appId, "public", "treasure-hunt", teamId, "progress", locationId);
+                setDoc(teamDocRef, { solved: true, solvedTimestamp: new Date() }, { merge: true });
+
+                const nextLocationId = currentLocation.next;
+                if (nextLocationId) {
+                    nextClueLink.href = `?team=${teamId}&location=${nextLocationId}`;
+                    nextClueSection.classList.remove('hidden');
+                }
+            } else {
+                messageArea.textContent = 'Not quite. Try another answer!';
+                messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
+                answerInput.select();
+            }
+        });
+        
+        initializeFirebase();
+
+    </script>
+</body>
+</html>
