@@ -190,7 +190,12 @@
                 qrcodeContainer.innerHTML = '';
 
                 try {
-                    const prompt = `Create a clever, unique, and fun puzzle, riddle, or tricky question. The answer to your creation MUST be these exact words: "${nextLocation}". The puzzle should hint at the location without using the words themselves.`;
+                    // --- FIXED: More explicit prompt to prevent the AI from revealing the answer ---
+                    const prompt = `You are a creative puzzle master for a treasure hunt. Your task is to generate a single, clever puzzle, riddle, or tricky question.
+The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}".
+Your response must ONLY be the puzzle text itself. Do not include any extra text, explanation, or the answer in your response.
+The puzzle should hint at the location "${nextLocation}" without using the word itself.`;
+                    
                     const puzzle = await generateWithGemini(prompt);
                     
                     generateQrButton.textContent = "Saving Clue...";
