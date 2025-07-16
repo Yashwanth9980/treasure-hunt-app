@@ -190,11 +190,12 @@
                 qrcodeContainer.innerHTML = '';
 
                 try {
-                    // --- FIXED: More explicit prompt to prevent the AI from revealing the answer ---
-                    const prompt = `You are a creative puzzle master for a treasure hunt. Your task is to generate a single, clever puzzle, riddle, or tricky question.
+                    // --- UPDATED: More challenging prompt ---
+                    const prompt = `You are a master of cryptic puzzles for a treasure hunt for very clever players.
+Your task is to generate a single, difficult puzzle. It could be a multi-step logic problem, an abstract riddle, or a very cryptic clue.
 The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}".
 Your response must ONLY be the puzzle text itself. Do not include any extra text, explanation, or the answer in your response.
-The puzzle should hint at the location "${nextLocation}" without using the word itself.`;
+The puzzle should hint at the location "${nextLocation}" in a challenging and indirect way. Avoid simple or direct descriptions.`;
                     
                     const puzzle = await generateWithGemini(prompt);
                     
