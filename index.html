@@ -109,7 +109,7 @@
             apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
             authDomain: "neural-quest-51f1b.firebaseapp.com",
             projectId: "neural-quest-51f1b",
-            storageBucket: "neural-quest-51f1b.firebasestorage.app",
+            storageBucket: "neural-quest-51f1b.appspot.com",
             messagingSenderId: "149762631280",
             appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
             measurementId: "G-V1VX8NDWRC"
@@ -272,7 +272,7 @@
                 throw new Error("AI generator is not configured.");
             }
             
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
             const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
             const response = await fetch(apiUrl, {
