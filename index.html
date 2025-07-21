@@ -106,15 +106,19 @@
         // Firebase & API Key Initialization
         let db, auth;
         const firebaseConfig = {
-            // PASTE YOUR FIREBASE WEB APP CONFIG HERE
-            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0", 
+            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
             authDomain: "neural-quest-51f1b.firebaseapp.com",
             projectId: "neural-quest-51f1b",
-            storageBucket: "neural-quest-51f1b.appspot.com",
+            storageBucket: "neural-quest-51f1b.firebasestorage.app",
             messagingSenderId: "149762631280",
             appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
             measurementId: "G-V1VX8NDWRC"
+
         };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         // PASTE YOUR GEMINI API KEY HERE
         const GEMINI_API_KEY = "AIzaSyAUqoWFlYuI4on9XkXed58bXVnlSYZoP68";
 
