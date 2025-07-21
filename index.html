@@ -117,7 +117,7 @@
         };
 
         // PASTE YOUR GEMINI API KEY HERE
-        const GEMINI_API_KEY = "AIzaSyBiuGmvmfVhpiF3BY2aJAUlC_Wv3CnIOXo";
+        const GEMINI_API_KEY = "AIzaSyB3cKpPz8RUvhdtFGzBFW2SVvfstS4Pae0";
 
         async function initializeFirebase() {
             try {
@@ -267,7 +267,7 @@
         }
         
         async function generateWithGemini(prompt) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyBiuGmvmfVhpiF3BY2aJAUlC_Wv3CnIOXo") {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyB3cKpPz8RUvhdtFGzBFW2SVvfstS4Pae0") {
                 console.error("Gemini API Key is missing.");
                 throw new Error("AI generator is not configured.");
             }
