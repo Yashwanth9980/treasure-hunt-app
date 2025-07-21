@@ -115,7 +115,7 @@
             measurementId: "G-V1VX8NDWRC"
         };
 
-        const GEMINI_API_KEY = "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0";
+        const GEMINI_API_KEY = "AIzaSyBiuGmvmfVhpiF3BY2aJAUlC_Wv3CnIOXo";
 
         async function initializeFirebase() {
             try {
@@ -263,7 +263,7 @@
         }
         
         async function generateWithGemini(prompt) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0") {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyBiuGmvmfVhpiF3BY2aJAUlC_Wv3CnIOXo") {
                 console.error("Gemini API Key is missing.");
                 throw new Error("AI generator is not configured.");
             }
