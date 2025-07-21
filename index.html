@@ -8,28 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
-        .card-glow {
-            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3), 0 0 5px rgba(74, 222, 128, 0.2);
-        }
-        .btn-glow:hover {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
-        }
-        #qrcode-container img {
-            margin: auto;
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .funny-task-box {
-            background-color: #2d3748;
-            border-left: 4px solid #4ade80;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .card-glow { box-shadow: 0 0 15px rgba(74, 222, 128, 0.3), 0 0 5px rgba(74, 222, 128, 0.2); }
+        .btn-glow:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.7); }
+        #qrcode-container img { margin: auto; background: white; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -103,8 +86,6 @@
         const participantPage = document.getElementById('participant-page');
         const volunteerPage = document.getElementById('volunteer-page');
         const headerSubtitle = document.getElementById('header-subtitle');
-        
-        // Participant Page Elements
         const teamEntryView = document.getElementById('team-entry-view');
         const puzzleView = document.getElementById('puzzle-view');
         const teamNameInput = document.getElementById('team-name-input');
@@ -117,8 +98,6 @@
         const puzzleLoadingSpinner = document.getElementById('puzzle-loading-spinner');
         const correctAnswerView = document.getElementById('correct-answer-view');
         const nextLocationDisplay = document.getElementById('next-location-display');
-
-        // Volunteer Page Elements
         const locationInputWrapper = document.getElementById('location-input-wrapper');
         const nextLocationInput = document.getElementById('next-location-input');
         const generateQrButton = document.getElementById('generate-qr-button');
@@ -127,7 +106,8 @@
         // Firebase & API Key Initialization
         let db, auth;
         const firebaseConfig = {
-            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
+            // PASTE YOUR FIREBASE WEB APP CONFIG HERE
+            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0", 
             authDomain: "neural-quest-51f1b.firebaseapp.com",
             projectId: "neural-quest-51f1b",
             storageBucket: "neural-quest-51f1b.appspot.com",
@@ -135,7 +115,7 @@
             appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
             measurementId: "G-V1VX8NDWRC"
         };
-        // IMPORTANT: Get your API Key from Google AI Studio and paste it here
+        // PASTE YOUR GEMINI API KEY HERE
         const GEMINI_API_KEY = "AIzaSyAUqoWFlYuI4on9XkXed58bXVnlSYZoP68";
 
         async function initializeFirebase() {
@@ -143,10 +123,16 @@
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                onAuthStateChanged(auth, (user) => user ? routeApplication() : signInAnonymously(auth));
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        routeApplication();
+                    } else {
+                        signInAnonymously(auth);
+                    }
+                });
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Failed to initialize. Check console.</div>`;
+                document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Failed to initialize. Check your Firebase config.</div>`;
             }
         }
 
@@ -172,6 +158,7 @@
 
         // --- VOLUNTEER LOGIC ---
         function initializeVolunteerLogic() {
+            // I've restored the random puzzle logic from our previous session
             generateQrButton.onclick = async () => {
                 const nextLocation = nextLocationInput.value.trim();
                 if (!nextLocation) {
@@ -184,11 +171,18 @@
                 qrcodeContainer.innerHTML = '';
 
                 try {
-                    const prompt = `You are a master of cryptic puzzles for a treasure hunt for very clever players.
-Your task is to generate a single, difficult puzzle. It could be a multi-step logic problem, an abstract riddle, or a very cryptic clue.
-The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}".
-Your response must ONLY be the puzzle text itself. Do not include any extra text, explanation, or the answer in your response.
-The puzzle should hint at the location "${nextLocation}" in a challenging and indirect way. Avoid simple or direct descriptions.`;
+                    const puzzleStyles = [
+                        "a cryptic, rhyming couplet",
+                        "a multi-step logic problem",
+                        "an abstract, metaphorical riddle",
+                        "a clue based on historical or local trivia",
+                        "a pun-filled, humorous question",
+                        "a puzzle that requires lateral thinking",
+                        "a short, enigmatic poem"
+                    ];
+                    const randomStyle = puzzleStyles[Math.floor(Math.random() * puzzleStyles.length)];
+
+                    const prompt = `You are a master of cryptic puzzles for a treasure hunt. Your task is to generate a single, difficult puzzle in the style of ${randomStyle}. The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}". Your response must ONLY be the puzzle text itself. Do not add explanations or the answer. The puzzle must hint at "${nextLocation}" in a challenging, indirect way. Make this puzzle unique and different from any you've created before.`;
                     
                     const puzzle = await generateWithGemini(prompt);
                     
@@ -233,36 +227,41 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
                 teamIdDisplay.textContent = teamName;
                 puzzleLoadingSpinner.classList.remove('hidden');
 
-                const clueDocRef = doc(db, "clues", clueId);
-                const clueDocSnap = await getDoc(clueDocRef);
+                try {
+                    const clueDocRef = doc(db, "clues", clueId);
+                    const clueDocSnap = await getDoc(clueDocRef);
 
-                if (!clueDocSnap.exists()) {
-                    participantPage.innerHTML = `<p class="text-red-400 text-center">Error: Invalid clue ID. Please re-scan the QR code.</p>`;
-                    return;
-                }
-                const clueData = clueDocSnap.data();
-                
-                puzzleLoadingSpinner.classList.add('hidden');
-                puzzleTextEl.textContent = clueData.puzzle;
-                
-                submitButton.onclick = async () => {
-                    const userAnswer = answerInput.value.trim().toLowerCase();
-                    if (userAnswer === clueData.answer) {
-                        messageArea.textContent = 'Correct! Well done!';
-                        messageArea.className = 'mt-4 text-center font-semibold h-6 text-green-400';
-                        document.getElementById('answer-section').style.display = 'none';
-                        correctAnswerView.classList.remove('hidden');
-                        nextLocationDisplay.textContent = clueData.answer.charAt(0).toUpperCase() + clueData.answer.slice(1);
-                        
-                        const progressDocRef = doc(db, "progress", `${teamName}_${clueId}`);
-                        await setDoc(progressDocRef, { solved: true, solvedTimestamp: new Date() });
-                        
-                    } else {
-                        messageArea.textContent = 'Not quite. Try another answer!';
-                        messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
-                        answerInput.select();
+                    if (!clueDocSnap.exists()) {
+                        participantPage.innerHTML = `<p class="text-red-400 text-center">Error: Invalid clue ID. Please re-scan the QR code.</p>`;
+                        return;
                     }
-                };
+                    const clueData = clueDocSnap.data();
+                    
+                    puzzleLoadingSpinner.classList.add('hidden');
+                    puzzleTextEl.textContent = clueData.puzzle;
+                    
+                    submitButton.onclick = async () => {
+                        const userAnswer = answerInput.value.trim().toLowerCase();
+                        if (userAnswer === clueData.answer) {
+                            messageArea.textContent = 'Correct! Well done!';
+                            messageArea.className = 'mt-4 text-center font-semibold h-6 text-green-400';
+                            document.getElementById('answer-section').style.display = 'none';
+                            correctAnswerView.classList.remove('hidden');
+                            nextLocationDisplay.textContent = clueData.answer.charAt(0).toUpperCase() + clueData.answer.slice(1);
+                            
+                            const progressDocRef = doc(db, "progress", `${teamName}_${clueId}`);
+                            await setDoc(progressDocRef, { solved: true, solvedTimestamp: new Date() });
+                            
+                        } else {
+                            messageArea.textContent = 'Not quite. Try another answer!';
+                            messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
+                            answerInput.select();
+                        }
+                    };
+                } catch (error) {
+                    console.error("Error fetching clue:", error);
+                    participantPage.innerHTML = `<p class="text-red-400 text-center">Error: Could not load the puzzle. Please check your connection and refresh.</p>`;
+                }
             };
         }
         
@@ -273,9 +272,7 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
             }
             
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-            const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }]
-            };
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
