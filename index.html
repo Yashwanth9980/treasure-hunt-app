@@ -26,10 +26,6 @@
             padding: 10px;
             border-radius: 8px;
         }
-        .funny-task-box {
-            background-color: #2d3748;
-            border-left: 4px solid #4ade80;
-        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -136,7 +132,7 @@
             measurementId: "G-V1VX8NDWRC"
         };
         // IMPORTANT: Get your API Key from Google AI Studio and paste it here
-        const GEMINI_API_KEY = "AIzaSyDhLh5yhGMUwdJwxGjC1c4LuaQcJFjoETk";
+        const GEMINI_API_KEY = "PASTE_YOUR_REAL_GEMINI_API_KEY_HERE";
 
         async function initializeFirebase() {
             try {
@@ -184,11 +180,23 @@
                 qrcodeContainer.innerHTML = '';
 
                 try {
-                    const prompt = `You are a master of cryptic puzzles for a treasure hunt for very clever players.
-Your task is to generate a single, difficult puzzle. It could be a multi-step logic problem, an abstract riddle, or a very cryptic clue.
+                    // --- CHANGE: Added random styles to ensure puzzle variety ---
+                    const puzzleStyles = [
+                        "a cryptic, rhyming couplet",
+                        "a multi-step logic problem",
+                        "an abstract, metaphorical riddle",
+                        "a clue based on historical or local trivia",
+                        "a pun-filled, humorous question",
+                        "a puzzle that requires lateral thinking",
+                        "a short, enigmatic poem"
+                    ];
+                    const randomStyle = puzzleStyles[Math.floor(Math.random() * puzzleStyles.length)];
+
+                    const prompt = `You are a master of cryptic puzzles for a treasure hunt.
+Your task is to generate a single, difficult puzzle in the style of ${randomStyle}.
 The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}".
-Your response must ONLY be the puzzle text itself. Do not include any extra text, explanation, or the answer in your response.
-The puzzle should hint at the location "${nextLocation}" in a challenging and indirect way. Avoid simple or direct descriptions.`;
+Your response must ONLY be the puzzle text itself. Do not add explanations or the answer.
+The puzzle must hint at "${nextLocation}" in a challenging, indirect way. Make this puzzle unique and different from any you've created before.`;
                     
                     const puzzle = await generateWithGemini(prompt);
                     
@@ -267,7 +275,7 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
         }
         
         async function generateWithGemini(prompt) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyBpoxJh1BUAKUb9sAbTY_fu4aa1ZFDAf1o") {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "PASTE_YOUR_REAL_GEMINI_API_KEY_HERE") {
                 console.error("Gemini API Key is missing.");
                 throw new Error("AI generator is not configured.");
             }
