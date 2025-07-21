@@ -40,9 +40,7 @@
             <p id="header-subtitle" class="text-gray-400 mt-2">Create or solve your next clue.</p>
         </header>
 
-        <!-- Participant Page -->
         <main id="participant-page" class="bg-gray-800 border border-gray-700 rounded-lg p-6 md:p-8 card-glow hidden">
-            <!-- Team Name Entry View -->
             <div id="team-entry-view">
                 <h3 class="text-xl font-bold text-center mb-4">Welcome, Treasure Hunter!</h3>
                 <div class="space-y-4">
@@ -54,11 +52,10 @@
                 </div>
             </div>
 
-            <!-- Puzzle View -->
             <div id="puzzle-view" class="hidden">
                  <div id="info-section" class="mb-6 p-4 bg-gray-900 rounded-md">
                      <h2 class="text-lg font-bold">Team: <span id="team-id-display" class="text-green-400"></span></h2>
-                </div>
+                 </div>
                 <div id="puzzle-container" class="mb-6">
                     <p id="puzzle-text" class="text-lg md:text-xl leading-relaxed text-gray-200 min-h-[100px]"></p>
                     <div id="puzzle-loading-spinner" class="hidden flex items-center justify-center min-h-[100px]">
@@ -75,21 +72,15 @@
                 <div id="message-area" class="mt-4 text-center font-semibold h-6"></div>
                 <div id="correct-answer-view" class="hidden mt-6 text-center space-y-4">
                     <h3 class="text-2xl font-bold text-green-400">Correct!</h3>
-                    <p class="text-lg">The location is: <strong id="next-location-display" class="text-yellow-400"></strong></p>
-                    <div id="funny-task-container" class="funny-task-box p-4 rounded-lg text-left">
-                        <h4 class="font-bold text-md mb-2">Your Bonus Task:</h4>
-                        <p id="funny-task-text" class="text-gray-300"></p>
-                         <div id="task-loading-spinner" class="hidden flex items-center justify-center min-h-[50px]"><svg class="animate-spin h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-3 text-gray-400">Thinking of a funny task...</span></div>
-                    </div>
+                    <p class="text-lg">Proceed to the next location: <strong id="next-location-display" class="text-yellow-400"></strong></p>
                 </div>
             </div>
         </main>
 
-        <!-- Volunteer Page -->
         <main id="volunteer-page" class="bg-gray-800 border border-gray-700 rounded-lg p-6 md:p-8 card-glow hidden">
             <h2 class="text-2xl font-bold text-center mb-6 text-blue-400">Volunteer QR Code Generator</h2>
             <div class="space-y-4">
-                 <div>
+                 <div id="location-input-wrapper">
                     <label for="next-location-input" class="block mb-2 text-sm font-medium text-gray-300">Enter Secret Next Location</label>
                     <input type="text" id="next-location-input" class="w-full bg-gray-900 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., The Old Clock Tower">
                 </div>
@@ -122,10 +113,10 @@
         const puzzleLoadingSpinner = document.getElementById('puzzle-loading-spinner');
         const correctAnswerView = document.getElementById('correct-answer-view');
         const nextLocationDisplay = document.getElementById('next-location-display');
-        const funnyTaskText = document.getElementById('funny-task-text');
-        const taskLoadingSpinner = document.getElementById('task-loading-spinner');
+        // Removed bonus task elements
 
         // Volunteer Page Elements
+        const locationInputWrapper = document.getElementById('location-input-wrapper'); // Added this
         const nextLocationInput = document.getElementById('next-location-input');
         const generateQrButton = document.getElementById('generate-qr-button');
         const qrcodeContainer = document.getElementById('qrcode-container');
@@ -133,13 +124,13 @@
         // Firebase & API Key Initialization
         let db, auth;
         const firebaseConfig = {
-          apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
-          authDomain: "neural-quest-51f1b.firebaseapp.com",
-          projectId: "neural-quest-51f1b",
-          storageBucket: "neural-quest-51f1b.appspot.com",
-          messagingSenderId: "149762631280",
-          appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
-          measurementId: "G-V1VX8NDWRC"
+            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
+            authDomain: "neural-quest-51f1b.firebaseapp.com",
+            projectId: "neural-quest-51f1b",
+            storageBucket: "neural-quest-51f1b.appspot.com",
+            messagingSenderId: "149762631280",
+            appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
+            measurementId: "G-V1VX8NDWRC"
         };
         // IMPORTANT: Get your API Key from Google AI Studio and paste it here
         const GEMINI_API_KEY = "AIzaSyDhLh5yhGMUwdJwxGjC1c4LuaQcJFjoETk";
@@ -190,7 +181,6 @@
                 qrcodeContainer.innerHTML = '';
 
                 try {
-                    // --- UPDATED: More challenging prompt ---
                     const prompt = `You are a master of cryptic puzzles for a treasure hunt for very clever players.
 Your task is to generate a single, difficult puzzle. It could be a multi-step logic problem, an abstract riddle, or a very cryptic clue.
 The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}".
@@ -210,6 +200,9 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
                     const playerUrl = `${baseUrl}?clueId=${clueId}`;
 
                     new QRCode(qrcodeContainer, { text: playerUrl, width: 256, height: 256 });
+                    
+                    // --- CHANGE: Hide the location input after generating the QR code ---
+                    locationInputWrapper.classList.add('hidden');
 
                 } catch (error) {
                     console.error("Error creating clue:", error);
@@ -261,9 +254,9 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
                         
                         const progressDocRef = doc(db, "progress", `${teamName}_${clueId}`);
                         await setDoc(progressDocRef, { solved: true, solvedTimestamp: new Date() });
-
-                        const task = await generateFunnyTaskWithAI(teamName);
-                        funnyTaskText.textContent = task;
+                        
+                        // --- CHANGE: Removed bonus task logic ---
+                        
                     } else {
                         messageArea.textContent = 'Not quite. Try another answer!';
                         messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
@@ -302,22 +295,9 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
             }
             throw new Error("Invalid AI response format from Gemini API");
         }
-
-        async function generateFunnyTaskWithAI(teamId) {
-            taskLoadingSpinner.classList.remove('hidden');
-            funnyTaskText.classList.add('hidden');
-            try {
-                const prompt = `Create a single, short, simple, and funny task for Team "${teamId}" to perform before they move to their next location. It should be safe for work and something they can do in under 30 seconds. For example: "Walk like a crab for 10 paces" or "Sing the first line of a song in an opera voice".`;
-                return await generateWithGemini(prompt);
-            } catch(error) {
-                 console.error("Error generating funny task:", error);
-                 return "High-five every member of your team!";
-            } finally {
-                taskLoadingSpinner.classList.add('hidden');
-                funnyTaskText.classList.remove('hidden');
-            }
-        }
         
+        // --- CHANGE: Removed the generateFunnyTaskWithAI function ---
+
         initializeFirebase();
 
     </script>
