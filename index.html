@@ -113,11 +113,9 @@
             messagingSenderId: "149762631280",
             appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
             measurementId: "G-V1VX8NDWRC"
-
         };
 
-        // PASTE YOUR GEMINI API KEY HERE
-        const GEMINI_API_KEY = "AIzaSyAUqoWFlYuI4on9XkXed58bXVnlSYZoP68";
+        const GEMINI_API_KEY = "AIzaSyB3cKpPz8RUvhdtFGzBFW2SVvfstS4Pae0";
 
         async function initializeFirebase() {
             try {
@@ -159,7 +157,6 @@
 
         // --- VOLUNTEER LOGIC ---
         function initializeVolunteerLogic() {
-            // I've restored the random puzzle logic from our previous session
             generateQrButton.onclick = async () => {
                 const nextLocation = nextLocationInput.value.trim();
                 if (!nextLocation) {
@@ -173,12 +170,9 @@
 
                 try {
                     const puzzleStyles = [
-                        "a cryptic, rhyming couplet",
-                        "a multi-step logic problem",
-                        "an abstract, metaphorical riddle",
-                        "a clue based on historical or local trivia",
-                        "a pun-filled, humorous question",
-                        "a puzzle that requires lateral thinking",
+                        "a cryptic, rhyming couplet", "a multi-step logic problem",
+                        "an abstract, metaphorical riddle", "a clue based on historical trivia",
+                        "a pun-filled, humorous question", "a puzzle that requires lateral thinking",
                         "a short, enigmatic poem"
                     ];
                     const randomStyle = puzzleStyles[Math.floor(Math.random() * puzzleStyles.length)];
@@ -199,7 +193,9 @@
 
                     new QRCode(qrcodeContainer, { text: playerUrl, width: 256, height: 256 });
                     
-                    locationInputWrapper.classList.add('hidden');
+                    // --- CHANGE ---
+                    // Instead of hiding the input, we clear it for the next entry.
+                    nextLocationInput.value = '';
 
                 } catch (error) {
                     console.error("Error creating clue:", error);
@@ -267,7 +263,7 @@
         }
         
         async function generateWithGemini(prompt) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyB3cKpPz8RUvhdtFGzBFW2SVvfstS4Pae0") {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
                 console.error("Gemini API Key is missing.");
                 throw new Error("AI generator is not configured.");
             }
