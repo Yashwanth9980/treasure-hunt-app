@@ -71,12 +71,8 @@
                 </div>
                 <div id="message-area" class="mt-4 text-center font-semibold h-6"></div>
                 <div id="correct-answer-view" class="hidden mt-6 text-center space-y-4">
-                    <h3 class="text-2xl font-bold text-green-400">Correct! ✅</h3>
-                    <p class="text-lg">
-                        Complete the task given by the volunteer.
-                        <br>
-                        Then, head to your next location: <strong id="next-location-display" class="text-yellow-400"></strong>
-                    </p>
+                    <h3 class="text-2xl font-bold text-green-400">Correct!</h3>
+                    <p class="text-lg">Proceed to the next location: <strong id="next-location-display" class="text-yellow-400"></strong></p>
                 </div>
             </div>
         </main>
@@ -117,9 +113,10 @@
         const puzzleLoadingSpinner = document.getElementById('puzzle-loading-spinner');
         const correctAnswerView = document.getElementById('correct-answer-view');
         const nextLocationDisplay = document.getElementById('next-location-display');
+        // Removed bonus task elements
 
         // Volunteer Page Elements
-        const locationInputWrapper = document.getElementById('location-input-wrapper');
+        const locationInputWrapper = document.getElementById('location-input-wrapper'); // Added this
         const nextLocationInput = document.getElementById('next-location-input');
         const generateQrButton = document.getElementById('generate-qr-button');
         const qrcodeContainer = document.getElementById('qrcode-container');
@@ -204,6 +201,7 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
 
                     new QRCode(qrcodeContainer, { text: playerUrl, width: 256, height: 256 });
                     
+                    // --- CHANGE: Hide the location input after generating the QR code ---
                     locationInputWrapper.classList.add('hidden');
 
                 } catch (error) {
@@ -257,6 +255,8 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
                         const progressDocRef = doc(db, "progress", `${teamName}_${clueId}`);
                         await setDoc(progressDocRef, { solved: true, solvedTimestamp: new Date() });
                         
+                        // --- CHANGE: Removed bonus task logic ---
+                        
                     } else {
                         messageArea.textContent = 'Not quite. Try another answer!';
                         messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
@@ -295,6 +295,8 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
             }
             throw new Error("Invalid AI response format from Gemini API");
         }
+        
+        // --- CHANGE: Removed the generateFunnyTaskWithAI function ---
 
         initializeFirebase();
 
