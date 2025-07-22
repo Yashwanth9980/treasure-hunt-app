@@ -53,9 +53,9 @@
             </div>
 
             <div id="puzzle-view" class="hidden">
-                 <div id="info-section" class="mb-6 p-4 bg-gray-900 rounded-md">
-                     <h2 class="text-lg font-bold">Team: <span id="team-id-display" class="text-green-400"></span></h2>
-                 </div>
+                <div id="info-section" class="mb-6 p-4 bg-gray-900 rounded-md">
+                    <h2 class="text-lg font-bold">Team: <span id="team-id-display" class="text-green-400"></span></h2>
+                </div>
                 <div id="puzzle-container" class="mb-6">
                     <p id="puzzle-text" class="text-lg md:text-xl leading-relaxed text-gray-200 min-h-[100px]"></p>
                     <div id="puzzle-loading-spinner" class="hidden flex items-center justify-center min-h-[100px]">
@@ -80,7 +80,7 @@
         <main id="volunteer-page" class="bg-gray-800 border border-gray-700 rounded-lg p-6 md:p-8 card-glow hidden">
             <h2 class="text-2xl font-bold text-center mb-6 text-blue-400">Volunteer QR Code Generator</h2>
             <div class="space-y-4">
-                 <div id="location-input-wrapper">
+                <div id="location-input-wrapper">
                     <label for="next-location-input" class="block mb-2 text-sm font-medium text-gray-300">Enter Secret Next Location</label>
                     <input type="text" id="next-location-input" class="w-full bg-gray-900 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., The Old Clock Tower">
                 </div>
@@ -113,38 +113,78 @@
         const puzzleLoadingSpinner = document.getElementById('puzzle-loading-spinner');
         const correctAnswerView = document.getElementById('correct-answer-view');
         const nextLocationDisplay = document.getElementById('next-location-display');
-        // Removed bonus task elements
 
         // Volunteer Page Elements
-        const locationInputWrapper = document.getElementById('location-input-wrapper'); // Added this
+        const locationInputWrapper = document.getElementById('location-input-wrapper');
         const nextLocationInput = document.getElementById('next-location-input');
         const generateQrButton = document.getElementById('generate-qr-button');
         const qrcodeContainer = document.getElementById('qrcode-container');
 
-        // Firebase & API Key Initialization
-        let db, auth;
+        // 🔑 API KEYS & CONFIG - REPLACE THESE WITH YOUR ACTUAL KEYS
+        
+        // 📍 FIREBASE CONFIG - Update these with your Firebase project details
         const firebaseConfig = {
-            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",
-            authDomain: "neural-quest-51f1b.firebaseapp.com",
-            projectId: "neural-quest-51f1b",
-            storageBucket: "neural-quest-51f1b.appspot.com",
-            messagingSenderId: "149762631280",
-            appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",
-            measurementId: "G-V1VX8NDWRC"
+            apiKey: "AIzaSyAnT2kN6DEXBX_di6KqBsdhxLByWQ3eJE0",                    // ← Replace this
+            authDomain: "neural-quest-51f1b.firebaseapp.com",          // ← Replace YOUR_PROJECT_ID
+            projectId: "neural-quest-51f1b",                           // ← Replace YOUR_PROJECT_ID
+            storageBucket: "neural-quest-51f1b.firebasestorage.app",           // ← Replace YOUR_PROJECT_ID
+            messagingSenderId: "149762631280",                    // ← Replace this
+            appId: "1:149762631280:web:7b8e53a9711f0fc90536b5",                                   // ← Replace this
+            measurementId: "G-V1VX8NDWRC"                    // ← Replace this (optional)
         };
-        // IMPORTANT: Get your API Key from Google AI Studio and paste it here
-        const GEMINI_API_KEY = "AIzaSyAO7BQLHLPDKdGV758vUEf9EuzRZbTvbnY";
+        
+        // 📍 GEMINI API KEY - Get this from Google AI Studio
+        const GEMINI_API_KEY = "AIzaSyAO7BQLHLPDKdGV758vUEf9EuzRZbTvbnY";         // ← Replace this
+
+        // Firebase & Database variables
+        let db, auth;
 
         async function initializeFirebase() {
             try {
+                // Validate API keys before initialization
+                if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
+                    throw new Error("Gemini API Key is not configured. Please add your API key.");
+                }
+                
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY_HERE") {
+                    throw new Error("Firebase configuration is not complete. Please add your Firebase config.");
+                }
+
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                onAuthStateChanged(auth, (user) => user ? routeApplication() : signInAnonymously(auth));
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("User authenticated successfully");
+                        routeApplication();
+                    } else {
+                        console.log("Signing in anonymously...");
+                        signInAnonymously(auth).catch(error => {
+                            console.error("Anonymous sign-in failed:", error);
+                            showError("Authentication failed. Please refresh the page.");
+                        });
+                    }
+                });
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Failed to initialize. Check console.</div>`;
+                showError(`Initialization Error: ${error.message}`);
             }
+        }
+
+        function showError(message) {
+            document.body.innerHTML = `
+                <div class="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
+                    <div class="max-w-md text-center">
+                        <div class="text-red-500 text-6xl mb-4">⚠️</div>
+                        <h2 class="text-xl font-bold mb-4 text-red-400">Configuration Error</h2>
+                        <p class="text-gray-300 mb-4">${message}</p>
+                        <button onclick="window.location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Refresh Page
+                        </button>
+                    </div>
+                </div>
+            `;
         }
 
         function routeApplication() {
@@ -187,26 +227,61 @@ The puzzle's secret answer, which you must NOT reveal, is: "${nextLocation}".
 Your response must ONLY be the puzzle text itself. Do not include any extra text, explanation, or the answer in your response.
 The puzzle should hint at the location "${nextLocation}" in a challenging and indirect way. Avoid simple or direct descriptions.`;
                     
+                    console.log("Generating puzzle with Gemini...");
                     const puzzle = await generateWithGemini(prompt);
+                    console.log("Puzzle generated successfully");
                     
-                    generateQrButton.textContent = "Saving Clue...";
+                    generateQrButton.textContent = "Saving Clue to Database...";
                     const clueDocRef = await addDoc(collection(db, "clues"), {
                         puzzle: puzzle,
-                        answer: nextLocation.toLowerCase()
+                        answer: nextLocation.toLowerCase(),
+                        createdAt: new Date(),
+                        createdBy: auth.currentUser?.uid || 'anonymous'
                     });
+                    
+                    console.log("Clue saved to database with ID:", clueDocRef.id);
                     
                     const clueId = clueDocRef.id;
                     const baseUrl = window.location.href.split('?')[0];
                     const playerUrl = `${baseUrl}?clueId=${clueId}`;
 
-                    new QRCode(qrcodeContainer, { text: playerUrl, width: 256, height: 256 });
+                    generateQrButton.textContent = "Generating QR Code...";
+                    new QRCode(qrcodeContainer, { 
+                        text: playerUrl, 
+                        width: 256, 
+                        height: 256,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
                     
-                    // --- CHANGE: Hide the location input after generating the QR code ---
                     locationInputWrapper.classList.add('hidden');
+                    
+                    // Add success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'mt-4 p-4 bg-green-800 rounded-md text-green-200 text-center';
+                    successMsg.innerHTML = `
+                        <div class="font-bold">QR Code Generated Successfully! 🎉</div>
+                        <div class="text-sm mt-2">Players can scan this code to access the puzzle.</div>
+                        <div class="text-xs mt-2 text-green-300">Location: ${nextLocation}</div>
+                    `;
+                    qrcodeContainer.appendChild(successMsg);
 
                 } catch (error) {
                     console.error("Error creating clue:", error);
-                    alert("Could not generate QR code. Check API Key and database connection.");
+                    
+                    let errorMessage = "Could not generate QR code. ";
+                    if (error.message.includes("API Key")) {
+                        errorMessage += "Please check your Gemini API key configuration.";
+                    } else if (error.message.includes("Firebase")) {
+                        errorMessage += "Please check your Firebase configuration.";
+                    } else if (error.message.includes("network") || error.message.includes("fetch")) {
+                        errorMessage += "Please check your internet connection.";
+                    } else {
+                        errorMessage += `Error: ${error.message}`;
+                    }
+                    
+                    alert(errorMessage);
                 } finally {
                     generateQrButton.disabled = false;
                     generateQrButton.textContent = "Generate Clue & QR Code";
@@ -218,6 +293,11 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
         function initializeParticipantLogic() {
             const urlParams = new URLSearchParams(window.location.search);
             const clueId = urlParams.get('clueId');
+            
+            if (!clueId) {
+                showError("Invalid URL: Missing clue ID parameter.");
+                return;
+            }
             
             startPuzzleButton.onclick = async () => {
                 const teamName = teamNameInput.value.trim();
@@ -231,73 +311,123 @@ The puzzle should hint at the location "${nextLocation}" in a challenging and in
                 teamIdDisplay.textContent = teamName;
                 puzzleLoadingSpinner.classList.remove('hidden');
 
-                const clueDocRef = doc(db, "clues", clueId);
-                const clueDocSnap = await getDoc(clueDocRef);
+                try {
+                    console.log("Loading clue from database...");
+                    const clueDocRef = doc(db, "clues", clueId);
+                    const clueDocSnap = await getDoc(clueDocRef);
 
-                if (!clueDocSnap.exists()) {
-                    participantPage.innerHTML = `<p class="text-red-400 text-center">Error: Invalid clue ID. Please re-scan the QR code.</p>`;
-                    return;
-                }
-                const clueData = clueDocSnap.data();
-                
-                puzzleLoadingSpinner.classList.add('hidden');
-                puzzleTextEl.textContent = clueData.puzzle;
-                
-                submitButton.onclick = async () => {
-                    const userAnswer = answerInput.value.trim().toLowerCase();
-                    if (userAnswer === clueData.answer) {
-                        messageArea.textContent = 'Correct! Well done!';
-                        messageArea.className = 'mt-4 text-center font-semibold h-6 text-green-400';
-                        document.getElementById('answer-section').style.display = 'none';
-                        correctAnswerView.classList.remove('hidden');
-                        nextLocationDisplay.textContent = clueData.answer.charAt(0).toUpperCase() + clueData.answer.slice(1);
-                        
-                        const progressDocRef = doc(db, "progress", `${teamName}_${clueId}`);
-                        await setDoc(progressDocRef, { solved: true, solvedTimestamp: new Date() });
-                        
-                        // --- CHANGE: Removed bonus task logic ---
-                        
-                    } else {
-                        messageArea.textContent = 'Not quite. Try another answer!';
-                        messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
-                        answerInput.select();
+                    if (!clueDocSnap.exists()) {
+                        throw new Error("Invalid clue ID. Please re-scan the QR code.");
                     }
-                };
+                    
+                    const clueData = clueDocSnap.data();
+                    console.log("Clue loaded successfully");
+                    
+                    puzzleLoadingSpinner.classList.add('hidden');
+                    puzzleTextEl.textContent = clueData.puzzle;
+                    
+                    submitButton.onclick = async () => {
+                        const userAnswer = answerInput.value.trim().toLowerCase();
+                        const correctAnswer = clueData.answer.toLowerCase();
+                        
+                        if (userAnswer === correctAnswer) {
+                            messageArea.textContent = 'Correct! Well done!';
+                            messageArea.className = 'mt-4 text-center font-semibold h-6 text-green-400';
+                            document.getElementById('answer-section').style.display = 'none';
+                            correctAnswerView.classList.remove('hidden');
+                            nextLocationDisplay.textContent = clueData.answer.charAt(0).toUpperCase() + clueData.answer.slice(1);
+                            
+                            // Save progress to database
+                            try {
+                                const progressDocRef = doc(db, "progress", `${teamName}_${clueId}`);
+                                await setDoc(progressDocRef, { 
+                                    teamName: teamName,
+                                    clueId: clueId,
+                                    solved: true, 
+                                    solvedTimestamp: new Date(),
+                                    answer: clueData.answer
+                                });
+                                console.log("Progress saved to database");
+                            } catch (error) {
+                                console.error("Failed to save progress:", error);
+                            }
+                            
+                        } else {
+                            messageArea.textContent = 'Not quite. Try another answer!';
+                            messageArea.className = 'mt-4 text-center font-semibold h-6 text-red-400';
+                            answerInput.select();
+                        }
+                    };
+                    
+                    // Allow Enter key to submit answer
+                    answerInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            submitButton.click();
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error("Error loading clue:", error);
+                    puzzleLoadingSpinner.classList.add('hidden');
+                    puzzleTextEl.innerHTML = `<div class="text-red-400">Error: ${error.message}</div>`;
+                }
             };
         }
         
         async function generateWithGemini(prompt) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyAO7BQLHLPDKdGV758vUEf9EuzRZbTvbnY") {
-                console.error("Gemini API Key is missing.");
-                throw new Error("AI generator is not configured.");
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
+                throw new Error("Gemini API Key is not configured. Please add your API key from Google AI Studio.");
             }
             
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
             const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }]
+                contents: [{ 
+                    role: "user", 
+                    parts: [{ text: prompt }] 
+                }],
+                generationConfig: {
+                    temperature: 0.9,
+                    topK: 1,
+                    topP: 1,
+                    maxOutputTokens: 1000,
+                }
             };
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
-                 const errorBody = await response.text();
-                 console.error("Gemini API Error Response:", errorBody);
-                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                const errorBody = await response.text();
+                console.error("Gemini API Error Response:", errorBody);
+                
+                if (response.status === 400) {
+                    throw new Error("Invalid API request. Check your Gemini API key.");
+                } else if (response.status === 403) {
+                    throw new Error("API access denied. Check your Gemini API key permissions.");
+                } else if (response.status === 429) {
+                    throw new Error("API quota exceeded. Please try again later.");
+                } else {
+                    throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
+                }
             }
             
             const result = await response.json();
+            console.log("Gemini API Response:", result);
+            
             if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                return result.candidates[0].content.parts[0].text;
+                return result.candidates[0].content.parts[0].text.trim();
+            } else {
+                console.error("Invalid Gemini response format:", result);
+                throw new Error("Invalid response format from Gemini API");
             }
-            throw new Error("Invalid AI response format from Gemini API");
         }
-        
-        // --- CHANGE: Removed the generateFunnyTaskWithAI function ---
 
+        // Initialize the application
         initializeFirebase();
 
     </script>
